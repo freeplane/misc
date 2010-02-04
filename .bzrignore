@@ -1,0 +1,10 @@
+*.OTHER
+*.BASE
+*.THIS
+./*/bin
+./google-api-translate/work/*
+./*/build
+./*/dist
+backups
+./.metadata
+
