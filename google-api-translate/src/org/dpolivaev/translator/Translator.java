@@ -17,9 +17,7 @@ package org.dpolivaev.translator;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.io.PrintStream;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -38,12 +36,23 @@ import com.google.api.translate.Translate;
 public class Translator {
 
 	/**
-	 * @param args
-	 * @throws IOException 
-	 * @throws FileNotFoundException 
+	 * Automatically translates all entries in a file matching the pattern "*_en.properties" 
+	 * expects language resource files in the current directory. Uses
+	 * use:
+	 * <pre>
+	 *   cd work/
+	 *   java -cp ../bin:../lib/google-api-translate-java-0.92.jar org.dpolivaev.translator.Translator
+	 * </pre>
+	 * or use ant:
+	 * <pre>
+	 *   ant translate
+	 *   ls work/
+	 * </pre>
 	 */
 	public static void main(String[] args) throws Exception {
-		File[] listFiles = new File(".").listFiles();
+		final File workingDirectory = new File(".");
+		File[] listFiles = workingDirectory.listFiles();
+		System.out.println("processing " + listFiles.length + " files");
 		final String suffix = "_en.properties";
 		String en = null;
 		for(final File file:listFiles){
@@ -54,6 +63,8 @@ public class Translator {
 			}
 		}
 		if(en == null){
+			System.err.println("no matching file with suffix '" + suffix + "' in '"
+			        + workingDirectory.getCanonicalPath() + "'");
 			return;
 		}
 		GoogleAPI.setHttpReferrer("http://code.google.com/p/i18n-translator/");
@@ -121,7 +132,7 @@ public class Translator {
 			}
 			Language[] array = new Language[languages.size()];
 			languages.toArray(array);
-			System.out.println(value);
+			System.out.println("translating " + value);
 			String[] translations = null;
 			for(int i = 1; i < 10; i++)
 			{
