@@ -1,8 +1,20 @@
 <?php
 
+$toBeIgnored = array();
+include './ignoredBugs.php';
 $pathToFiles = "/home/groups/f/fr/freeplane/persistent/bugreport/";
 
 $log =  $_POST["log"];
+
+foreach($toBeIgnored as $l)
+{
+    if(false !== strpos($log, $l))
+    {
+	echo "external bug, report ignored";
+	return;
+    }
+}
+
 $lines = split("\n", $log);
 $ver = $_POST["version"];
 $hashInput = $ver;
@@ -23,7 +35,7 @@ if($actualHash != $givenHash)
 $pathToVersion =  $pathToFiles . $ver;
 if(! file_exists($pathToVersion))
 {
-	echo "old version, report ignored";
+	echo "unknown freeplane version, report ignored";
 	return;
 #	mkdir($pathToVersion);
 #    chmod($pathToVersion, 0777);
