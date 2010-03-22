@@ -13,35 +13,11 @@ use CGI::Carp qw ( fatalsToBrowser );
 use File::Basename;
 use File::Path;
 
-# Constants to be adapted based on your code management system
-my $EXPORT_COMMAND = "/usr/bin/bzr";
-my $EXPORT_PARAM = "export";
-my $EXPORT_BRANCH = "freeplane/freeplane_program/release_branches/1_0_x";
-my $EXPORT_ROOT = "bzr://freeplane.bzr.sourceforge.net/bzrroot/"
-					. $EXPORT_BRANCH;
-my $HTML_LINK = "http://freeplane.bzr.sourceforge.net/bzr/"
-					. $EXPORT_BRANCH . "/files";
-my $EXPORT_TRANS_DIR = "freeplane/resources/translations";
-my $EXPORT_REF_DIR = "freeplane/viewer-resources/translations";
+# Change the following line to point to Config.pm and adapt Config.pm
+push @INC, "/home/ericl/Public/FREEPLANE/misc/transcheck/transcheck.files";
+require "Config.pmc";
 
-# Constants to adapt based on your web server configuration
-my $TARGET_DIR = "/home/groups/f/fr/freeplane/persistent/transcheck";
-my $TARGET_TRANS_DIR = "translations";
-my $TARGET_REF_DIR = "reference";
-my $TARGET_HTML_DIR = "html";
-my $TARGET_TEXT_DIR = "text";
-
-# Let's build a few derived constants...
-my $export_trans_path = $EXPORT_ROOT . "/" . $EXPORT_TRANS_DIR;
-my $export_ref_path = $EXPORT_ROOT . "/" . $EXPORT_REF_DIR;
-my $target_trans_path = $TARGET_DIR . "/" . $TARGET_TRANS_DIR;
-my $target_ref_path = $TARGET_DIR . "/" . $TARGET_REF_DIR;
-my $target_html_path = $TARGET_DIR . "/" . $TARGET_HTML_DIR;
-my $target_text_path = $TARGET_DIR . "/" . $TARGET_TEXT_DIR;
-
-my $reference_file = 'Resources_en.properties';
-my $reference_path = $target_ref_path . '/' . $reference_file;
-
+# Functions
 sub debug($);
 sub export($$);
 sub list_directory($$$);
@@ -58,12 +34,12 @@ my $query = new CGI;
 # for security reasons, we empty the $PATH environment variable
 $ENV{'PATH'} = '';
 
-if (not -d $TARGET_DIR) {
-	die("Target directory for export doesn't exist.");
+if (not -d $Config::TARGET_DIR) {
+	die("Target directory '$Config::TARGET_DIR' doesn't exist.");
 }
 
-export($export_trans_path,$target_trans_path);
-export($export_ref_path,$target_ref_path);
+export($Config::EXPORT_TRANS_PATH,$Config::TARGET_TRANS_PATH);
+export($Config::EXPORT_REF_PATH,$Config::TARGET_REF_PATH);
 
 print $query->header(-type=>'text/html', -charset => 'utf-8',-expires=>'900s');
 
@@ -78,8 +54,8 @@ print <<END_HTML;
  <body>
 END_HTML
 
-list_check_directory($target_trans_path, "Translations", "trans");
-list_directory($target_ref_path, "Reference", "ref");
+list_check_directory($Config::TARGET_TRANS_PATH, "Translations", "trans");
+list_directory($Config::TARGET_REF_PATH, "Reference", "ref");
 
 print <<END_HTML;
  </body>
@@ -93,7 +69,7 @@ sub list_check_directory($$$) {
 	my $name = shift;
 	my $type = shift;
 
-	my $ref_hash = load_translation_from_file($reference_path);
+	my $ref_hash = load_translation_from_file($Config::REFERENCE_PATH);
 
 	opendir(DIR, $dir) or
 		die "Can't open $name directory: $!";
@@ -106,7 +82,7 @@ sub list_check_directory($$$) {
 	<p>The below table shows the quality of each translation file as found
 	in the Bazaar code repository of
 	<a href="http://freeplane.org/">Freeplane</a> under
-	<a href="$HTML_LINK">$EXPORT_ROOT</a>,
+	<a href="${Config::HTML_LINK}">${Config::EXPORT_ROOT}</a>,
 	as of <strong>$date</strong>.</p>
 	<p>You are very much invited to download the files of the languages
 	you speak well and which have not reached 100% of quality, and improve
@@ -126,7 +102,7 @@ END_HTML
 		# Use the English keys to detect the language
 		my $lang = "???";
 		if ($file =~ m/Resources_(.*)\.properties/) {
-			$lang = $ref_hash->{'OptionPanel.' . $1} or $1;
+			$lang = ( $ref_hash->{'OptionPanel.' . $1} or $1 );
 		}
 
 		# number of keys in the given translation
@@ -190,8 +166,8 @@ sub export($$) {
 		my $old_target = $target . ".OLD";
 		rmtree($old_target);
 		debug "rmtree($old_target)";
-		my $rc = system { $EXPORT_COMMAND }
-				($EXPORT_COMMAND, $EXPORT_PARAM,
+		my $rc = system { $Config::EXPORT_COMMAND }
+				($Config::EXPORT_COMMAND, $Config::EXPORT_PARAM,
 					$old_target, $source);
 		if ($rc) {
 		# TODO: we know that bzr doesn't exist in web environment
@@ -361,15 +337,16 @@ sub create_analysis_file($$$) {
 		if ( $filename !~ m/^(Resources_\w+\.properties)$/i );
 
 	my $html_file = $1 . ".html";
-	my $html_path = $target_html_path . '/' . $html_file;
+	my $html_path = $Config::TARGET_HTML_PATH . '/' . $html_file;
 
 	# if the file is there and not too old, we return
-	if ( (-f $html_path) and ((-M $html_path) <= (-M $reference_path)) ) {
+	if ( (-f $html_path) and
+			((-M $html_path) <= (-M $Config::REFERENCE_PATH)) ) {
 		return $html_file;
 	}
 
-	if ( ! -d $target_html_path) {
-		mkdir($target_html_path)
+	if ( ! -d $Config::TARGET_HTML_PATH) {
+		mkdir($Config::TARGET_HTML_PATH)
 			or die("Can't create target HTML directory: $!");
 	}
 
@@ -404,8 +381,9 @@ sub create_analysis_file($$$) {
 	   <pre>
 END_HTML
 
-	print AF "Reference filename : " . $reference_file . "\n";
-	print AF "Reference date     : " . localtime((stat $reference_path)[9]) . "\n";
+	print AF "Reference filename : " . $Config::REFERENCE_FILE . "\n";
+	print AF "Reference date     : "
+			. localtime((stat $Config::REFERENCE_PATH)[9]) . "\n";
 	print AF "Compared filename  : " . $filename . "\n";
 	print AF "Comparaison time   : " . localtime() . "\n";
 	print AF "Missing keys       : " . $missing_nr . "\n";

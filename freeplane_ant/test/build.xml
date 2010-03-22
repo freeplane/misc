@@ -1,0 +1,16 @@
+<project name="freeplane_ant" default="test" basedir="..">
+
+  <taskdef name="format-translation" classname="org.freeplane.ant.FormatTranslation" classpath="../build/freeplaneant.jar"/>
+
+  <target name="sort">
+    <format-translation dir="unsorted" includes="*.properties" outputDir="sorted"/>
+  </target>
+
+  <target name="clean">
+    <delete dir="sorted" quiet="true" />
+  </target>
+
+  <target name="test">
+    <antcall target="sort"/>
+  </target>
+</project>
