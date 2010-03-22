@@ -1,7 +1,8 @@
 <?php
 
 $toBeIgnored[] = 'at sun.swing.FilePane$2.repaintListSelection';
-$toBeIgnored[] = 'org.scilab.forge.jlatexmath.TextStyleMappingNotFoundException:';
+# $toBeIgnored[] = 'org.scilab.forge.jlatexmath.TextStyleMappingNotFoundException:';
+$toBeIgnored[] = 'at javax.swing.text.GlyphView.getText';
 $toBeIgnored[] = 'at sun.swing.SwingUtilities2.drawStringUnderlineCharAt';
 $toBeIgnored[] = 'java.lang.OutOfMemoryError: OutOfMemoryError';
 $toBeIgnored[] = 'at sun.font.FontDesignMetrics.charsWidth';
@@ -18,5 +19,8 @@ $toBeIgnored[] = 'at javax.swing.text.GlyphPainter1.paint';
 $toBeIgnored[] = 'at sun.awt.windows.WComponentPeer.getBackBuffer';
 $toBeIgnored[] = 'java.lang.OutOfMemoryError: Java heap space';
 $toBeIgnored[] = 'at sun.awt.windows.WPrinterJob._startDoc';
+
+$wanted[] = 'at javax.swing.JTable.editingStopped';
+$wanted[] = 'java.lang.StackOverflowError';
 
 ?>

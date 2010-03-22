@@ -1,7 +1,8 @@
 <?php
 
 $toBeIgnored = array();
-include './ignoredBugs.php';
+$wanted = array();
+include './settings.php';
 $pathToFiles = "/home/groups/f/fr/freeplane/persistent/bugreport/";
 
 $log =  $_POST["log"];
@@ -66,6 +67,16 @@ if($newFile)
 	fwrite($fh, "\n");
 }
 fclose($fh);
+
+foreach($wanted as $l)
+{
+    if(false !== strpos($log, $l))
+    {
+	echo "wanted";
+	return;
+    }
+}
+
 echo "ok";
 
 ?>
