@@ -27,9 +27,10 @@ import org.apache.tools.ant.Task;
  * Attributes:
  * <ul>
  * <li> dir: the input directory (default: ".")
- * <li> outputDir: the output directory. Overwrites existing files if outputDir equals the input directory.
- * <li> includes: wildcard pattern.
- * <li> excludes: wildcard pattern, overrules includes.
+ * <li> outputDir: the output directory. Overwrites existing files if outputDir
+ *      equals the input directory (default: the input directory)
+ * <li> includes: wildcard pattern (default: all regular files).
+ * <li> excludes: wildcard pattern, overrules includes (default: no excludes).
  * </ul>
  */
 public class FormatTranslation extends Task {
@@ -58,6 +59,10 @@ public class FormatTranslation extends Task {
 	private ArrayList<Pattern> excludePatterns = new ArrayList<Pattern>();
 
 	public void execute() {
+		if (inputDir == null)
+			throw new BuildException("missing attribute 'dir'");
+                if (outputDir == null)
+                        outputDir = inputDir;
 		if (!inputDir.isDirectory())
 			throw new BuildException("input directory '" + inputDir + "' does not exist");
 		File[] inputFiles = inputDir.listFiles(new IncludeFileFilter());
