@@ -90,7 +90,8 @@ public class FormatTranslation extends Task {
 				File inputFile = inputFiles[i];
 				log("processing " + inputFile + "...", Project.MSG_DEBUG);
 				final String content = readFile(inputFile);
-				String[] lines = content.split("[\n\r]+");
+				// a trailing backslash escapes the following newline
+				String[] lines = content.split("(?<!\\\\)[\n\r]+");
 				String[] sortedLines = processLines(inputFile, lines);
 				if (!Arrays.equals(lines, sortedLines) || writeIfUnchanged) {
 					if (checkOnly) {
@@ -120,6 +121,7 @@ public class FormatTranslation extends Task {
 				continue;
 			final String[] keyValue = lines[i].split("\\s*=\\s*", 2);
 			if (keyValue.length != 2) {
+				// broken line: no '=' sign
 				warn(inputFile.getName() + ": no key/val: " + lines[i]);
 				continue;
 			}
@@ -132,7 +134,7 @@ public class FormatTranslation extends Task {
 				}
 				else if (quality(thisValue) == quality(lastValue)) {
 					if (thisValue.equals(lastValue)) {
-						warn(inputFile.getName() + ": drop duplicate " + toLine(lastKey, thisValue));
+						log(inputFile.getName() + ": drop duplicate " + toLine(lastKey, thisValue));
 					}
 					else if (quality(thisValue) == QUALITY_MANUALLY_TRANSLATED) {
 						warn(inputFile.getName() //
@@ -202,11 +204,12 @@ public class FormatTranslation extends Task {
 	}
 
 	private void writeFile(File outputFile, String[] lines) throws IOException {
+		final String endLine = System.getProperty("line.separator");
 		BufferedWriter out = null;
 		try {
 			out = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(outputFile), "US-ASCII"));
 			for (int i = 0; i != lines.length; i++) {
-				out.write(lines[i]);
+				out.write(lines[i].replaceAll("\\\\[\n\r]+", "\\\\" + endLine));
 				// change this to write(<sep>) to enforce Unix or Dos or Mac newlines
 				out.newLine();
 			}
