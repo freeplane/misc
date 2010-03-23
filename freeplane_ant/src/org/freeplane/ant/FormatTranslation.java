@@ -11,7 +11,9 @@ import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.regex.Pattern;
+
 import org.apache.tools.ant.BuildException;
+import org.apache.tools.ant.Project;
 import org.apache.tools.ant.Task;
 
 /** formats a translation file and writes the result to another file.
@@ -34,6 +36,11 @@ import org.apache.tools.ant.Task;
  * </ul>
  */
 public class FormatTranslation extends Task {
+	private final static int QUALITY_NULL = 0; // for empty values
+	private final static int QUALITY_TRANSLATE_ME = 1;
+	private final static int QUALITY_AUTO_TRANSLATED = 2;
+	private final static int QUALITY_MANUALLY_TRANSLATED = 3;
+
 	private class IncludeFileFilter implements FileFilter {
 		public boolean accept(File pathname) {
 			if (pathname.isDirectory())
@@ -59,27 +66,44 @@ public class FormatTranslation extends Task {
 	private ArrayList<Pattern> excludePatterns = new ArrayList<Pattern>();
 
 	public void execute() {
+		executeImpl(false);
+	}
+
+	public int checkOnly() {
+		return executeImpl(true);
+	}
+
+	/** returns the number of unformatted files. */
+	private int executeImpl(boolean checkOnly) {
 		if (inputDir == null)
 			throw new BuildException("missing attribute 'dir'");
-                if (outputDir == null)
-                        outputDir = inputDir;
+		if (outputDir == null)
+			outputDir = inputDir;
 		if (!inputDir.isDirectory())
 			throw new BuildException("input directory '" + inputDir + "' does not exist");
 		File[] inputFiles = inputDir.listFiles(new IncludeFileFilter());
 		if (!outputDir.isDirectory() && !outputDir.mkdirs())
 			throw new BuildException("cannot create output directory '" + outputDir + "'");
 		try {
+			int countFormattingRequired = 0;
 			for (int i = 0; i < inputFiles.length; i++) {
 				File inputFile = inputFiles[i];
-				log("processing " + inputFile + "...");
+				log("processing " + inputFile + "...", Project.MSG_DEBUG);
 				final String content = readFile(inputFile);
 				String[] lines = content.split("[\n\r]+");
 				String[] sortedLines = processLines(inputFile, lines);
 				if (!Arrays.equals(lines, sortedLines) || writeIfUnchanged) {
-					File outputFile = new File(outputDir, inputFile.getName());
-					writeFile(outputFile, sortedLines);
+					if (checkOnly) {
+						++countFormattingRequired;
+						warn(inputFile + " requires proper formatting");
+					}
+					else {
+						File outputFile = new File(outputDir, inputFile.getName());
+						writeFile(outputFile, sortedLines);
+					}
 				}
 			}
+			return countFormattingRequired;
 		}
 		catch (IOException e) {
 			throw new BuildException(e);
@@ -99,21 +123,38 @@ public class FormatTranslation extends Task {
 				warn(inputFile.getName() + ": no key/val: " + lines[i]);
 				continue;
 			}
-			if (lastKey != null && keyValue[0].equals(lastKey)) {
-				if (quality(keyValue[1]) <= quality(lastValue)) {
-					log(inputFile.getName() + ": dropping " + toLine(lastKey, keyValue[1]));
+			final String thisKey = keyValue[0];
+			final String thisValue = keyValue[1];
+			if (lastKey != null && thisKey.equals(lastKey)) {
+				if (quality(thisValue) < quality(lastValue)) {
+					log(inputFile.getName() + ": drop " + toLine(lastKey, thisValue));
+					continue;
+				}
+				else if (quality(thisValue) == quality(lastValue)) {
+					if (thisValue.equals(lastValue)) {
+						warn(inputFile.getName() + ": drop duplicate " + toLine(lastKey, thisValue));
+					}
+					else if (quality(thisValue) == QUALITY_MANUALLY_TRANSLATED) {
+						warn(inputFile.getName() //
+						        + ": drop one of two of equal quality (revisit!):keep: " + toLine(lastKey, lastValue));
+						warn(inputFile.getName() //
+						        + ": drop one of two of equal quality (revisit!):drop: " + toLine(thisKey, thisValue));
+					}
+					else {
+						log(inputFile.getName() + ": drop " + toLine(lastKey, thisValue));
+					}
 					continue;
 				}
 				else {
-					log(inputFile.getName() + ": dropping " + toLine(lastKey, lastValue));
+					log(inputFile.getName() + ": drop " + toLine(lastKey, lastValue));
 				}
-				lastValue = keyValue[1];
+				lastValue = thisValue;
 			}
 			else {
 				if (lastKey != null)
 					result.add(toLine(lastKey, lastValue));
-				lastKey = keyValue[0];
-				lastValue = keyValue[1];
+				lastKey = thisKey;
+				lastValue = thisValue;
 			}
 		}
 		if (lastKey != null)
@@ -127,11 +168,13 @@ public class FormatTranslation extends Task {
 	}
 
 	private int quality(String value) {
+		if (value.length() == 0)
+			return QUALITY_NULL;
 		if (value.indexOf("[translate me]") > 0)
-			return 0;
+			return QUALITY_TRANSLATE_ME;
 		if (value.indexOf("[auto]") > 0)
-			return 1;
-		return 2;
+			return QUALITY_AUTO_TRANSLATED;
+		return QUALITY_MANUALLY_TRANSLATED;
 	}
 
 	private String readFile(final File inputFile) throws IOException {
@@ -180,12 +223,8 @@ public class FormatTranslation extends Task {
 		}
 	}
 
-	private void log(Object o) {
-		System.out.println(o);
-	}
-
-	private void warn(Object o) {
-		System.err.println(o);
+	private void warn(String msg) {
+		log(msg, Project.MSG_WARN);
 	}
 
 	// adapted from http://www.rgagnon.com/javadetails/java-0515.html, Réal Gagnon
@@ -234,9 +273,9 @@ public class FormatTranslation extends Task {
 		setDir(new File(inputDir));
 	}
 
-	public void setDir(File file) {
-		this.inputDir = file;
-    }
+	public void setDir(File inputDir) {
+		this.inputDir = inputDir;
+	}
 
 	public void setIncludes(String pattern) {
 		includePatterns.add(Pattern.compile(wildcardToRegex(pattern)));
@@ -258,9 +297,13 @@ public class FormatTranslation extends Task {
 
 	public static void main(String[] args) {
 		final FormatTranslation formatTranslation = new FormatTranslation();
+		final Project project = FormatTranslationCheck.createProject(formatTranslation);
+		formatTranslation.setTaskName("format-translation");
+		formatTranslation.setProject(project);
 		formatTranslation.setDir("/devel/freeplane-bazaar-repo/1_0_x_plain/freeplane/resources/translations");
 		formatTranslation.setIncludes("Resources_*.properties");
-		formatTranslation.setOutputDir("/devel/freeplane-bazaar-repo/1_0_x_plain/freeplane/resources/translations/sorted");
+		formatTranslation
+		    .setOutputDir("/devel/freeplane-bazaar-repo/1_0_x_plain/freeplane/resources/translations/sorted");
 		formatTranslation.execute();
 		System.out.println("done");
 	}

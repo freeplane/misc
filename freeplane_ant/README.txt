@@ -23,3 +23,20 @@ Attributes:
  - includes: wildcard pattern (default: all regular files).
  - excludes: wildcard pattern, overrules includes (default: no
    excludes).
+ - writeIfUnchanged: by default sorted files are not written if they
+   are unchanged after formatting. Set to "true" to change this
+   behaviour.
+
+Task FormatTranslationCheck
+---------------------------
+Does the same thing as FormatTranslation with the following exceptions:
+
+- no files are written or changed.
+- only the formatting status of each file is reported.
+- the build fails unless failonerror="false"
+
+Attributes:
+ - all attributes of the FormatTranslation task without
+   "outputDir" and "writeIfUnchanged"
+ - failonerror: boolean. By default the build fails if some wrongly
+   formatted file is found. Set to "false" to change this behaviour.

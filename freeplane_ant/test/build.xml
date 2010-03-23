@@ -1,9 +1,15 @@
 <project name="freeplane_ant" default="test" basedir="..">
 
   <taskdef name="format-translation" classname="org.freeplane.ant.FormatTranslation" classpath="../build/freeplaneant.jar"/>
+  <taskdef name="check-translation" classname="org.freeplane.ant.FormatTranslationCheck" classpath="../build/freeplaneant.jar"/>
 
-  <target name="sort">
-    <format-translation dir="unsorted" includes="*.properties" outputDir="sorted"/>
+  <target name="check">
+    <!--check-translation dir="unsorted" includes="*.properties" failonerror="false" /-->
+    <check-translation dir="unsorted" includes="*.properties" />
+  </target>
+
+  <target name="format">
+    <format-translation dir="unsorted" includes="*.properties" outputDir="sorted" />
   </target>
 
   <target name="clean">
@@ -11,6 +17,7 @@
   </target>
 
   <target name="test">
-    <antcall target="sort"/>
+    <antcall target="format"/>
+    <antcall target="check"/>
   </target>
 </project>
