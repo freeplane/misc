@@ -228,6 +228,7 @@ public class FormatTranslation extends Task {
 				// change this to write(<sep>) to enforce Unix or Dos or Mac newlines
 				out.newLine();
 			}
+			log("wrote " + outputFile);
 		}
 		finally {
 			if (out != null) {
@@ -293,6 +294,10 @@ public class FormatTranslation extends Task {
 
 	public void setDir(File inputDir) {
 		this.inputDir = inputDir;
+	}
+
+	public File getDir() {
+		return this.inputDir;
 	}
 
 	public void setIncludes(String pattern) {

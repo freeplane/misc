@@ -29,11 +29,16 @@ public class FormatTranslationCheck extends Task {
 
 	public void execute() {
 		int countUnformatted = formatTranslation.checkOnly();
-		final String message = countUnformatted + " files require proper formatting - run format-translation to fix";
-		if (failOnError)
+                if (countUnformatted == 0) {
+                    log("all files are formatted in " + formatTranslation.getDir()); 
+                }
+                else {
+                    final String message = countUnformatted + " files require proper formatting - run format-translation to fix";
+                    if (failOnError)
 			throw new BuildException(message);
-		else
+                    else
 			formatTranslation.log(message, Project.MSG_ERR);
+                }
 	}
 
 	public void setDir(String inputDir) {
