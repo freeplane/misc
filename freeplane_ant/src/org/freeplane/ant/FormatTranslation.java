@@ -49,6 +49,29 @@ import org.apache.tools.ant.Task;
  * <li> includes: wildcard pattern (default: all regular files).
  * <li> excludes: wildcard pattern, overrules includes (default: no excludes).
  * </ul>
+ * 
+ * Build messages:
+ * <table border=1>
+ * <tr><th>Message</th><th>Action</th><th>Description</th></tr>
+ * <tr><td>&lt;file&gt;: no key/val: &lt;line&gt;</td><td>drop line</td><td>broken line without an '=' sign</td></tr>
+ * <tr><td>&lt;file&gt;: drop duplicate: &lt;line&gt;</td><td>drop line</td><td>two completely identical lines</td></tr>
+ * <tr><td>&lt;file&gt;: drop: &lt;line&gt;</td><td>drop line</td>
+ *     <td>this translation is dropped since a better one was found
+ *        (quality: [translate me] -> [auto] -> manually translated)
+ *     </td>
+ * </tr>
+ * <tr><td>&lt;file&gt;: drop one of two of equal quality (revisit!):keep: &lt;line&gt;</td><td>keep line</td>
+ *     <td>for one key two manual translations were found. This one (arbitrarily chosen) will be kept.
+ *         Printout of the complete line allows to correct an action of FormatTranslation via Copy and Past
+ *         if it chose the wrong tranlation.
+ *     </td>
+ * </tr>
+ * <tr><td>&lt;file&gt;: drop one of two of equal quality (revisit!):drop: &lt;line&gt;</td><td>drop line</td>
+ *     <td>accompanies the :keep: line: This is the line that is dropped.
+ *     </td>
+ * </tr>
+ * </table>
+ * Note that CheckTranslation does not remove anything but produces the same messages!
  */
 public class FormatTranslation extends Task {
 	private final static int QUALITY_NULL = 0; // for empty values
