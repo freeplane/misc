@@ -128,7 +128,7 @@ public class FormatTranslation extends Task {
 				File inputFile = inputFiles[i];
 				log("processing " + inputFile + "...", Project.MSG_DEBUG);
 				String[] lines = TranslationUtils.readLines(inputFile);
-				String[] sortedLines = processLines(inputFile, Arrays.copyOf(lines, lines.length));
+				String[] sortedLines = processLines(inputFile, lines.clone());
 				final boolean formattingRequired = !Arrays.equals(lines, sortedLines);
 				if (formattingRequired) {
 					++countFormattingRequired;
