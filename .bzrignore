@@ -8,3 +8,5 @@
 backups
 ./.metadata
 freeplane_ant/test/sorted
+log
+bin
