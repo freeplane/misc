@@ -182,9 +182,9 @@ public class Translator extends Task {
 	private String fixTranslation(String toTranslate, String translatedValue) {
 		String result = hexToLower(translatedValue);
 		// Google translates "{1}" into "(1)"
-		result = toTranslate.matches("\\{\\d\\}") ? result.replaceAll("\\((\\d)\\)", "{$1}") : result;
+		result = toTranslate.matches(".*\\{\\d\\}.*") ? result.replaceAll("\\((\\d)\\)", "{$1}") : result;
 		// fixme: remove once '$' expansion isn't used anymore
-		result = toTranslate.indexOf('$') > 0 ? result.replaceAll("\\$ (\\d)\\b", "\\$$1") : result;
+		result = toTranslate.matches(".*\\$(\\d)\\b.*") ? result.replaceAll("\\$ (\\d)\\b", "\\$$1") : result;
 		return result;
 	}
 
