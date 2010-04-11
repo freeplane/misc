@@ -18,7 +18,6 @@ package org.freeplane.ant;
 import java.io.File;
 
 import org.apache.tools.ant.BuildException;
-import org.apache.tools.ant.DefaultLogger;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.Task;
 
@@ -29,16 +28,13 @@ public class FormatTranslationCheck extends Task {
 
 	public void execute() {
 		int countUnformatted = formatTranslation.checkOnly();
-                if (countUnformatted == 0) {
-                    log("all files are formatted in " + formatTranslation.getDir()); 
-                }
-                else {
-                    final String message = countUnformatted + " files require proper formatting - run format-translation to fix";
-                    if (failOnError)
+		final String message = countUnformatted + " files require proper formatting - run format-translation to fix";
+                if (countUnformatted == 0)
+			formatTranslation.log("all files are properly formatted", Project.MSG_DEBUG);
+		else if (failOnError)
 			throw new BuildException(message);
-                    else
+		else
 			formatTranslation.log(message, Project.MSG_ERR);
-                }
 	}
 
 	public void setDir(String inputDir) {
@@ -63,7 +59,7 @@ public class FormatTranslationCheck extends Task {
 
 	public static void main(String[] args) {
 		final FormatTranslationCheck formatTranslationCheck = new FormatTranslationCheck();
-		final Project project = createProject(formatTranslationCheck);
+		final Project project = TranslationUtils.createProject(formatTranslationCheck);
 		formatTranslationCheck.setTaskName("check-translation");
 		formatTranslationCheck.formatTranslation.setProject(project);
 		formatTranslationCheck.formatTranslation.setTaskName("check-translation");
@@ -72,15 +68,4 @@ public class FormatTranslationCheck extends Task {
 		formatTranslationCheck.execute();
 		System.out.println("done");
 	}
-
-	static Project createProject(final Task task) {
-	    final Project project = new Project();
-		final DefaultLogger logger = new DefaultLogger();
-		logger.setMessageOutputLevel(Project.MSG_INFO);
-		logger.setOutputPrintStream(System.out);
-		logger.setErrorPrintStream(System.err);
-		project.addBuildListener(logger);
-		task.setProject(project);
-	    return project;
-    }
 }
