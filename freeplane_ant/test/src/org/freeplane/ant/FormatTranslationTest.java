@@ -23,7 +23,7 @@ import org.apache.tools.ant.Project;
 import org.junit.Test;
 
 public class FormatTranslationTest {
-	private static final String FREEPLANE_BASE_DIR = "/devel/freeplane-bazaar-repo/1_0_x_plain";
+	private static final String TRANSLATIONS_SOURCE_DIR = System.getProperty("TRANSLATIONS_SOURCE_DIR");
 
 	@Test
 	public void testComparator() {
@@ -41,7 +41,7 @@ public class FormatTranslationTest {
 		final Project project = TranslationUtils.createProject(formatTranslation);
 		formatTranslation.setTaskName("format-translation");
 		formatTranslation.setProject(project);
-		formatTranslation.setDir(FREEPLANE_BASE_DIR + "/freeplane/resources/translations");
+		formatTranslation.setDir(TRANSLATIONS_SOURCE_DIR);
 		formatTranslation.setIncludes("Resources_*.properties");
 //		formatTranslation.setOutputDir(FREEPLANE_BASE_DIR + "/freeplane/resources/translations/sorted");
 		formatTranslation.execute();
