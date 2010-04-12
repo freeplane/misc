@@ -56,15 +56,14 @@ public class TranslationUtils {
     	}
     }
 
-	static void writeFile(File outputFile, String[] lines) throws IOException {
-    	final String endLine = System.getProperty("line.separator");
+	static void writeFile(File outputFile, String[] lines, String lineSeparator) throws IOException {
     	BufferedWriter out = null;
     	try {
     		out = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(outputFile), "US-ASCII"));
     		for (int i = 0; i != lines.length; i++) {
-    			out.write(lines[i].replaceAll("\\\\[\n\r]+", "\\\\" + endLine));
+    			out.write(lines[i].replaceAll("\\\\[\n\r]+", "\\\\" + lineSeparator));
     			// change this to write(<sep>) to enforce Unix or Dos or Mac newlines
-    			out.newLine();
+    			out.write(lineSeparator);
     		}
     	}
     	finally {
