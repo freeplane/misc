@@ -35,12 +35,24 @@ public class FormatTranslationTest {
 		assertEquals("stable sort, only by key", "a.b.c= y", strings[3]);
 	}
 
+
+	@Test
+	public void testCheckForEmptyValues() {
+		final String regex = "\\s*(\\[auto\\]|\\[translate me\\])*\\s*";
+		assertTrue(" [auto]\r".matches(regex));
+		assertTrue("[translate me]\r".matches(regex));
+		assertTrue("\r".matches(regex));
+		assertTrue("".matches(regex));
+		assertFalse(" [nix]\r".matches(regex));
+	}
+	
 	@Test
 	public void testFormatTranslation() {
 		final FormatTranslation formatTranslation = new FormatTranslation();
 		final Project project = TranslationUtils.createProject(formatTranslation);
 		formatTranslation.setTaskName("format-translation");
 		formatTranslation.setProject(project);
+		assertNotNull("system property TRANSLATIONS_SOURCE_DIR not set", TRANSLATIONS_SOURCE_DIR);
 		formatTranslation.setDir(TRANSLATIONS_SOURCE_DIR);
 		formatTranslation.setIncludes("Resources_*.properties");
 //		formatTranslation.setOutputDir(FREEPLANE_BASE_DIR + "/freeplane/resources/translations/sorted");

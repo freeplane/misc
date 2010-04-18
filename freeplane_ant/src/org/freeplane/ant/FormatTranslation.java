@@ -175,6 +175,9 @@ public class FormatTranslation extends Task {
 				warn(inputFile.getName() + ": no key/val: " + lines[i]);
 				continue;
 			}
+			if (keyValue[1].matches("(\\[auto\\]|\\[translate me\\])?")) {
+				warn(inputFile.getName() + ": empty translation: " + lines[i]);
+			}
 			final String thisKey = keyValue[0];
 			final String thisValue = keyValue[1];
 			if (lastKey != null && thisKey.equals(lastKey)) {
