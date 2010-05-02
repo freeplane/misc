@@ -107,6 +107,7 @@ public class FormatTranslation extends Task {
 	private File inputDir = new File(".");
 	private ArrayList<Pattern> includePatterns = new ArrayList<Pattern>();
 	private ArrayList<Pattern> excludePatterns = new ArrayList<Pattern>();
+	private String lineSeparator = System.getProperty("line.separator");
 
 	public void execute() {
 		final int countFormatted = executeImpl(false);
@@ -139,7 +140,7 @@ public class FormatTranslation extends Task {
 				}
 				if (formattingRequired || writeIfUnchanged) {
 					File outputFile = new File(outputDir, inputFile.getName());
-					TranslationUtils.writeFile(outputFile, sortedLines);
+					TranslationUtils.writeFile(outputFile, sortedLines, lineSeparator);
 				}
 			}
 			return countFormattingRequired;
@@ -173,6 +174,9 @@ public class FormatTranslation extends Task {
 				// broken line: no '=' sign or empty key (we had " = ======")
 				warn(inputFile.getName() + ": no key/val: " + lines[i]);
 				continue;
+			}
+			if (keyValue[1].matches("(\\[auto\\]|\\[translate me\\])?")) {
+				warn(inputFile.getName() + ": empty translation: " + lines[i]);
 			}
 			final String thisKey = keyValue[0];
 			final String thisValue = keyValue[1];
@@ -261,5 +265,17 @@ public class FormatTranslation extends Task {
 	/** parameter is set in the build file via the attribute "outputDir" */
 	public void setOutputDir(File outputDir) {
 		this.outputDir = outputDir;
+	}
+
+	/** parameter is set in the build file via the attribute "eolStyle" */
+	public void setEolStyle(String eolStyle) {
+		if (eolStyle.toLowerCase().startsWith("unix"))
+			lineSeparator = "\n";
+		else if (eolStyle.toLowerCase().startsWith("win"))
+			lineSeparator = "\r\n";
+		else if (eolStyle.toLowerCase().startsWith("mac"))
+			lineSeparator = "\r";
+		else
+			throw new BuildException("unknown eolStyle, known: unix|win|mac");
 	}
 }
