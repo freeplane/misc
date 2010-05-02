@@ -10,7 +10,6 @@
 
   <taskdef name="format-translation" classname="org.freeplane.ant.FormatTranslation" classpath="${jar}"/>
   <taskdef name="check-translation" classname="org.freeplane.ant.FormatTranslationCheck" classpath="${jar}"/>
-  <taskdef name="translator" classname="org.freeplane.ant.Translator" classpath="${jar}:${google.translator.jar}"/>
 
   <target name="compile-junit">
     <mkdir dir="${bin}" />
@@ -38,11 +37,7 @@
     <check-translation dir="unsorted" includes="*.properties" />
   </target>
 
-  <target name="translate">
-    <translator sourcefile="unsorted/Resources_en.properties" translationsdir="unsorted" includes="*.properties" />
-  </target>
-
-  <target name="format">
+   <target name="format">
     <format-translation dir="unsorted" includes="*.properties" outputDir="sorted" />
   </target>
 
@@ -57,7 +52,6 @@
   </target>
 
   <target name="test" depends="run-junit">
-    <antcall target="translate" />
     <antcall target="format" />
     <antcall target="check-sorted" />
   </target>
