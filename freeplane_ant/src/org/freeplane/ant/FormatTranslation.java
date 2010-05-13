@@ -18,7 +18,7 @@ package org.freeplane.ant;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.regex.Pattern;
 
@@ -33,7 +33,7 @@ import org.apache.tools.ant.Task;
  * <li> remove duplicates
  * <li> if a key is present multiple times entries marked as [translate me]
  *      and [auto] are removed in favor of normal entries.
- * <li> newline style is changed to the platform default.
+ * <li> newline style is changed to &lt;eolStyle&gt;.
  * </ol>
  * 
  * Attributes:
@@ -43,6 +43,7 @@ import org.apache.tools.ant.Task;
  *      equals the input directory (default: the input directory)
  * <li> includes: wildcard pattern (default: all regular files).
  * <li> excludes: wildcard pattern, overrules includes (default: no excludes).
+ * <li> eolStyle: unix|mac|windows (default: platform default).
  * </ul>
  * 
  * Build messages:
@@ -111,7 +112,7 @@ public class FormatTranslation extends Task {
 
 	public void execute() {
 		final int countFormatted = executeImpl(false);
-		log("formatted " + countFormatted + " files");
+		log(inputDir + ": formatted " + countFormatted + " file" + (countFormatted == 1 ? "" : "s"));
 	}
 
 	public int checkOnly() {
@@ -128,17 +129,21 @@ public class FormatTranslation extends Task {
 			for (int i = 0; i < inputFiles.length; i++) {
 				File inputFile = inputFiles[i];
 				log("processing " + inputFile + "...", Project.MSG_DEBUG);
-				String[] lines = TranslationUtils.readLines(inputFile);
-				String[] sortedLines = processLines(inputFile, lines.clone());
-				final boolean formattingRequired = !Arrays.equals(lines, sortedLines);
+				final String input = TranslationUtils.readFile(inputFile);
+				final ArrayList<String> lines = new ArrayList<String>(2048);
+				boolean eolStyleMatches = TranslationUtils.checkEolStyleAndReadLines(input, lines, lineSeparator);
+				final ArrayList<String> sortedLines = processLines(inputFile, lines);
+				final boolean contentChanged = !lines.equals(sortedLines);
+				final boolean formattingRequired = !eolStyleMatches || contentChanged;
 				if (formattingRequired) {
 					++countFormattingRequired;
 					if (checkOnly)
-						warn(inputFile + " requires proper formatting");
+						warn(inputFile + " requires formatting - " + formatCause(contentChanged, eolStyleMatches));
 					else
-						log("formatted " + inputFile, Project.MSG_DEBUG);
+						log(inputFile + "formatted - " + formatCause(contentChanged, eolStyleMatches),
+						    Project.MSG_DEBUG);
 				}
-				if (formattingRequired || writeIfUnchanged) {
+				if (!checkOnly && (formattingRequired || writeIfUnchanged)) {
 					File outputFile = new File(outputDir, inputFile.getName());
 					TranslationUtils.writeFile(outputFile, sortedLines, lineSeparator);
 				}
@@ -148,6 +153,12 @@ public class FormatTranslation extends Task {
 		catch (IOException e) {
 			throw new BuildException(e);
 		}
+	}
+
+	private String formatCause(boolean contentChanged, boolean eolStyleMatches) {
+		final String string1 = eolStyleMatches ? "" : "wrong eol style";
+		final String string2 = contentChanged ? "content changed" : "";
+		return string1 + (string1.length() > 0 && string2.length() > 0 ? ", " : "") + string2;
 	}
 
 	private void validate() {
@@ -161,22 +172,22 @@ public class FormatTranslation extends Task {
 			throw new BuildException("cannot create output directory '" + outputDir + "'");
 	}
 
-	private String[] processLines(File inputFile, String[] lines) {
-		Arrays.sort(lines, KEY_COMPARATOR);
-		ArrayList<String> result = new ArrayList<String>(lines.length);
+	private ArrayList<String> processLines(File inputFile, ArrayList<String> lines) {
+		Collections.sort(lines, KEY_COMPARATOR);
+		ArrayList<String> result = new ArrayList<String>(lines.size());
 		String lastKey = null;
 		String lastValue = null;
-		for (int i = 0; i < lines.length; i++) {
-			if (lines[i].indexOf('#') == 0 || lines[i].matches("\\s*"))
+		for (final String line : lines) {
+			if (line.indexOf('#') == 0 || line.matches("\\s*"))
 				continue;
-			final String[] keyValue = lines[i].split("\\s*=\\s*", 2);
+			final String[] keyValue = line.split("\\s*=\\s*", 2);
 			if (keyValue.length != 2 || keyValue[0].length() == 0) {
 				// broken line: no '=' sign or empty key (we had " = ======")
-				warn(inputFile.getName() + ": no key/val: " + lines[i]);
+				warn(inputFile.getName() + ": no key/val: " + line);
 				continue;
 			}
 			if (keyValue[1].matches("(\\[auto\\]|\\[translate me\\])?")) {
-				warn(inputFile.getName() + ": empty translation: " + lines[i]);
+				warn(inputFile.getName() + ": empty translation: " + line);
 			}
 			final String thisKey = keyValue[0];
 			final String thisValue = keyValue[1];
@@ -216,8 +227,7 @@ public class FormatTranslation extends Task {
 		}
 		if (lastKey != null)
 			result.add(TranslationUtils.toLine(lastKey, lastValue));
-		String[] resultArray = new String[result.size()];
-		return result.toArray(resultArray);
+		return result;
 	}
 
 	private int quality(String value) {

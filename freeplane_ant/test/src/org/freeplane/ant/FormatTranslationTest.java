@@ -15,8 +15,13 @@
  */
 package org.freeplane.ant;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
+import java.io.File;
+import java.util.ArrayList;
 import java.util.Arrays;
 
 import org.apache.tools.ant.Project;
@@ -24,6 +29,9 @@ import org.junit.Test;
 
 public class FormatTranslationTest {
 	private static final String TRANSLATIONS_SOURCE_DIR = System.getProperty("TRANSLATIONS_SOURCE_DIR");
+	private static String unix = "\n";
+	private static String mac = "\r";
+	private static String win = "\r\n";
 
 	@Test
 	public void testComparator() {
@@ -35,7 +43,6 @@ public class FormatTranslationTest {
 		assertEquals("stable sort, only by key", "a.b.c= y", strings[3]);
 	}
 
-
 	@Test
 	public void testCheckForEmptyValues() {
 		final String regex = "\\s*(\\[auto\\]|\\[translate me\\])*\\s*";
@@ -45,17 +52,74 @@ public class FormatTranslationTest {
 		assertTrue("".matches(regex));
 		assertFalse(" [nix]\r".matches(regex));
 	}
-	
+
+	@Test
+	public void testMatchEolStyle() {
+		assertTrue(TranslationUtils.matchEolStyle("", unix));
+		assertTrue(TranslationUtils.matchEolStyle("\n", unix));
+		assertTrue(TranslationUtils.matchEolStyle("\n\n", unix));
+		assertFalse(TranslationUtils.matchEolStyle("\r", unix));
+		assertFalse(TranslationUtils.matchEolStyle("\r\n", unix));
+		//
+		assertTrue(TranslationUtils.matchEolStyle("", win));
+		assertTrue(TranslationUtils.matchEolStyle("\r\n", win));
+		assertTrue(TranslationUtils.matchEolStyle("\r\n\r\n", win));
+		assertFalse(TranslationUtils.matchEolStyle("\r", win));
+		assertFalse(TranslationUtils.matchEolStyle("\n\r", win));
+		assertFalse(TranslationUtils.matchEolStyle("\n", win));
+	}
+
+	@Test
+	public void testCheckEolStyleAndReadLines() throws Exception {
+		final String input = "one\r\ntwo\n\rthree\\\nthree.one\n\nfour";
+		ArrayList<String> resultList = new ArrayList<String>();
+		assertFalse("not unique unix", TranslationUtils.checkEolStyleAndReadLines(input, resultList, unix));
+		assertEquals("a trailing backslash escapes a new line", 4, resultList.size());
+		assertFalse("not unique mac", TranslationUtils.checkEolStyleAndReadLines(input, resultList, mac));
+		assertEquals(4, resultList.size());
+		assertFalse("not unique win", TranslationUtils.checkEolStyleAndReadLines(input, resultList, win));
+		assertEquals(4, resultList.size());
+		//
+		String unixInput = input.replaceAll("\r\n|\n|\r", unix);
+		System.out.println("unixInput='" + f(unixInput) + "'");
+		assertTrue("unique unix", TranslationUtils.checkEolStyleAndReadLines(unixInput, resultList, unix));
+		assertFalse("not mac", TranslationUtils.checkEolStyleAndReadLines(unixInput, resultList, mac));
+		assertFalse("not win", TranslationUtils.checkEolStyleAndReadLines(unixInput, resultList, win));
+		assertEquals("a trailing backslash escapes a new line", 4, resultList.size());
+		//
+		String macInput = input.replaceAll("\r\n|\n|\r", mac);
+		System.out.println("macInput='" + f(macInput) + "'");
+		assertTrue("unique mac", TranslationUtils.checkEolStyleAndReadLines(macInput, resultList, mac));
+		assertFalse("not unix", TranslationUtils.checkEolStyleAndReadLines(macInput, resultList, unix));
+		assertFalse("not win", TranslationUtils.checkEolStyleAndReadLines(macInput, resultList, win));
+		assertEquals("a trailing backslash escapes a new line", 4, resultList.size());
+		//
+		String winInput = input.replaceAll("\r\n|\n|\r", win);
+		System.out.println("winInput='" + f(winInput) + "'");
+		assertTrue("unique win", TranslationUtils.checkEolStyleAndReadLines(winInput, resultList, win));
+		assertFalse("not unix", TranslationUtils.checkEolStyleAndReadLines(winInput, resultList, unix));
+		assertFalse("not mac", TranslationUtils.checkEolStyleAndReadLines(winInput, resultList, mac));
+		assertEquals("a trailing backslash escapes a new line", 4, resultList.size());
+		//
+		String resource = TranslationUtils.readFile(new File(TRANSLATIONS_SOURCE_DIR, "Resources_de.properties"));
+		assertTrue("not unix", TranslationUtils.checkEolStyleAndReadLines(resource, resultList, unix));
+	}
+
+	private String f(String input) {
+		return input.replace("\n", "\\n").replace("\r", "\\r");
+	}
+
 	@Test
 	public void testFormatTranslation() {
 		final FormatTranslation formatTranslation = new FormatTranslation();
 		final Project project = TranslationUtils.createProject(formatTranslation);
 		formatTranslation.setTaskName("format-translation");
 		formatTranslation.setProject(project);
+		formatTranslation.setEolStyle("unix");
 		assertNotNull("system property TRANSLATIONS_SOURCE_DIR not set", TRANSLATIONS_SOURCE_DIR);
 		formatTranslation.setDir(TRANSLATIONS_SOURCE_DIR);
 		formatTranslation.setIncludes("Resources_*.properties");
-//		formatTranslation.setOutputDir(FREEPLANE_BASE_DIR + "/freeplane/resources/translations/sorted");
+		//		formatTranslation.setOutputDir(FREEPLANE_BASE_DIR + "/freeplane/resources/translations/sorted");
 		formatTranslation.execute();
 		System.out.println("done");
 	}

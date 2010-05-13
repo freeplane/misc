@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.tools.ant.DefaultLogger;
@@ -31,130 +32,165 @@ import org.apache.tools.ant.Project;
 import org.apache.tools.ant.Task;
 
 public class TranslationUtils {
-
 	static class IncludeFileFilter implements FileFilter {
-    	private ArrayList<Pattern> includePatterns = new ArrayList<Pattern>();
-    	private ArrayList<Pattern> excludePatterns = new ArrayList<Pattern>();
-    	IncludeFileFilter(ArrayList<Pattern> includePatterns, ArrayList<Pattern> excludePatterns){
-    		this.includePatterns = includePatterns;
-    		this.excludePatterns = excludePatterns;
-    	}
-    	public boolean accept(File pathname) {
-    		if (pathname.isDirectory())
-    			return false;
-    		for (Pattern pattern : excludePatterns) {
-    			if (pattern.matcher(pathname.getName()).matches())
-    				return false;
-    		}
-    		if (includePatterns.isEmpty())
-    			return true;
-    		for (Pattern pattern : includePatterns) {
-    			if (pattern.matcher(pathname.getName()).matches())
-    				return true;
-    		}
-    		return false;
-    	}
-    }
+		private ArrayList<Pattern> includePatterns = new ArrayList<Pattern>();
+		private ArrayList<Pattern> excludePatterns = new ArrayList<Pattern>();
 
-	static void writeFile(File outputFile, String[] lines, String lineSeparator) throws IOException {
-    	BufferedWriter out = null;
-    	try {
-    		out = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(outputFile), "US-ASCII"));
-    		for (int i = 0; i != lines.length; i++) {
-    			out.write(lines[i].replaceAll("\\\\[\n\r]+", "\\\\" + lineSeparator));
-    			// change this to write(<sep>) to enforce Unix or Dos or Mac newlines
-    			out.write(lineSeparator);
-    		}
-    	}
-    	finally {
-    		if (out != null) {
-    			try {
-    				out.close();
-    			}
-    			catch (IOException e) {
-    				// can't help it
-    			}
-    		}
-    	}
-    }
+		IncludeFileFilter(ArrayList<Pattern> includePatterns, ArrayList<Pattern> excludePatterns) {
+			this.includePatterns = includePatterns;
+			this.excludePatterns = excludePatterns;
+		}
+
+		public boolean accept(File pathname) {
+			if (pathname.isDirectory())
+				return false;
+			for (Pattern pattern : excludePatterns) {
+				if (pattern.matcher(pathname.getName()).matches())
+					return false;
+			}
+			if (includePatterns.isEmpty())
+				return true;
+			for (Pattern pattern : includePatterns) {
+				if (pattern.matcher(pathname.getName()).matches())
+					return true;
+			}
+			return false;
+		}
+	}
+
+	static void writeFile(File outputFile, ArrayList<String> sortedLines, String lineSeparator) throws IOException {
+		BufferedWriter out = null;
+		try {
+			out = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(outputFile), "US-ASCII"));
+			for (String line : sortedLines) {
+				out.write(line.replaceAll("\\\\[\n\r]+", "\\\\" + lineSeparator));
+				// change this to write(<sep>) to enforce Unix or Dos or Mac newlines
+				out.write(lineSeparator);
+			}
+		}
+		finally {
+			if (out != null) {
+				try {
+					out.close();
+				}
+				catch (IOException e) {
+					// can't help it
+				}
+			}
+		}
+	}
 
 	// adapted from http://www.rgagnon.com/javadetails/java-0515.html, Réal Gagnon
-    public static String wildcardToRegex(String wildcard) {
-    	StringBuilder s = new StringBuilder(wildcard.length());
-    	s.append('^');
-    	for (int i = 0, is = wildcard.length(); i < is; i++) {
-    		char c = wildcard.charAt(i);
-    		switch (c) {
-    			case '*':
-    				s.append(".*");
-    				break;
-    			case '?':
-    				s.append(".");
-    				break;
-    			// escape special regexp-characters
-    			case '(':
-    			case ')':
-    			case '$':
-    			case '^':
-    			case '.':
-    			case '{':
-    			case '}':
-    			case '|':
-    			case '\\':
-    				s.append("\\");
-    				s.append(c);
-    				break;
-    			default:
-    				s.append(c);
-    				break;
-    		}
-    	}
-    	s.append('$');
-    	return (s.toString());
-    }
+	public static String wildcardToRegex(String wildcard) {
+		StringBuilder s = new StringBuilder(wildcard.length());
+		s.append('^');
+		for (int i = 0, is = wildcard.length(); i < is; i++) {
+			char c = wildcard.charAt(i);
+			switch (c) {
+				case '*':
+					s.append(".*");
+					break;
+				case '?':
+					s.append(".");
+					break;
+				// escape special regexp-characters
+				case '(':
+				case ')':
+				case '$':
+				case '^':
+				case '.':
+				case '{':
+				case '}':
+				case '|':
+				case '\\':
+					s.append("\\");
+					s.append(c);
+					break;
+				default:
+					s.append(c);
+					break;
+			}
+		}
+		s.append('$');
+		return (s.toString());
+	}
 
 	static String readFile(final File inputFile) throws IOException {
-    	InputStreamReader in = null;
-    	try {
-    		in = new InputStreamReader(new FileInputStream(inputFile), "US-ASCII");
-    		StringBuilder builder = new StringBuilder();
-    		final char[] buf = new char[1024];
-    		int len;
-    		while ((len = in.read(buf)) > 0) {
-    			builder.append(buf, 0, len);
-    		}
-    		return builder.toString();
-    	}
-    	finally {
-    		if (in != null) {
-    			try {
-    				in.close();
-    			}
-    			catch (IOException e) {
-    				// can't help it
-    			}
-    		}
-    	}
-    }
+		InputStreamReader in = null;
+		try {
+			in = new InputStreamReader(new FileInputStream(inputFile), "US-ASCII");
+			StringBuilder builder = new StringBuilder();
+			final char[] buf = new char[1024];
+			int len;
+			while ((len = in.read(buf)) > 0) {
+				builder.append(buf, 0, len);
+			}
+			return builder.toString();
+		}
+		finally {
+			if (in != null) {
+				try {
+					in.close();
+				}
+				catch (IOException e) {
+					// can't help it
+				}
+			}
+		}
+	}
 
-	static String[] readLines(File inputFile) throws IOException {
-		final String content = readFile(inputFile);
-		// a trailing backslash escapes the following newline
-		return content.split("(?<!\\\\)[\n\r]+");
-    }
-	
+	/** returns true if all eols match <code>lineSep</code>. */
+	/*package*/static boolean checkEolStyleAndReadLines(String input, ArrayList<String> resultList, String lineSep) {
+		resultList.clear();
+		boolean eolStyleMatches = true;
+		final Matcher matcher = Pattern.compile("(?<!\\\\)(\r\n?|\n)").matcher(input);
+		int index = 0;
+		while (matcher.find()) {
+			final String match = input.subSequence(index, matcher.start()).toString();
+			final String separator = matcher.group(1);
+			if (separator.equals("\n") && match.endsWith("\\\r")) {
+				// only windows: catch escaped CRLF (\\r\n) which will be parsed as \\r<split>\n
+				// not setting index will simply skip this match
+			}
+			else {
+				if (!matchEolStyle(separator, lineSep)) {
+					eolStyleMatches = false;
+				}
+				if (match.length() > 0)
+					resultList.add(match);
+				index = matcher.end();
+			}
+		}
+		// Add remaining segment
+		if (input.length() > index)
+			resultList.add(input.subSequence(index, input.length()).toString());
+		return eolStyleMatches;
+	}
+
+	/*package*/static boolean matchEolStyle(String eol, String lineSep) {
+		// quick success in the normal case
+		if (lineSep.equals(eol))
+			return true;
+		int i = 0;
+		for (; i < eol.length(); i += lineSep.length()) {
+			if (eol.indexOf(lineSep, i) != i)
+				return false;
+		}
+		return i == eol.length();
+	}
+
 	static String toLine(String key, String value) {
 		return key + " = " + value;
 	}
 
 	static Project createProject(final Task task) {
-        final Project project = new Project();
-    	final DefaultLogger logger = new DefaultLogger();
-    	logger.setMessageOutputLevel(Project.MSG_INFO);
-    	logger.setOutputPrintStream(System.out);
-    	logger.setErrorPrintStream(System.err);
-    	project.addBuildListener(logger);
-    	task.setProject(project);
-        return project;
-    }
+		final Project project = new Project();
+		final DefaultLogger logger = new DefaultLogger();
+		logger.setMessageOutputLevel(Project.MSG_INFO);
+		logger.setOutputPrintStream(System.out);
+		logger.setErrorPrintStream(System.err);
+		project.addBuildListener(logger);
+		task.setProject(project);
+		return project;
+	}
 }

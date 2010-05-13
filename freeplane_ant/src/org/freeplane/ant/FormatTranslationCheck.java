@@ -29,7 +29,7 @@ public class FormatTranslationCheck extends Task {
 	public void execute() {
 		int countUnformatted = formatTranslation.checkOnly();
 		final String message = countUnformatted + " files require proper formatting - run format-translation to fix";
-                if (countUnformatted == 0)
+		if (countUnformatted == 0)
 			formatTranslation.log("all files are properly formatted", Project.MSG_DEBUG);
 		else if (failOnError)
 			throw new BuildException(message);
@@ -55,6 +55,10 @@ public class FormatTranslationCheck extends Task {
 
 	public void setFailOnError(boolean failOnError) {
 		this.failOnError = failOnError;
+	}
+
+	public void setEolStyle(String eolStyle) {
+		formatTranslation.setEolStyle(eolStyle);
 	}
 
 	public static void main(String[] args) {
