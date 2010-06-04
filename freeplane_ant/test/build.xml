@@ -10,6 +10,7 @@
 
   <taskdef name="format-translation" classname="org.freeplane.ant.FormatTranslation" classpath="${jar}"/>
   <taskdef name="check-translation" classname="org.freeplane.ant.FormatTranslationCheck" classpath="${jar}"/>
+  <taskdef name="create-plugin" classname="org.freeplane.ant.CreatePlugin" classpath="${jar}"/>
 
   <target name="compile-junit">
     <mkdir dir="${bin}" />
@@ -43,6 +44,10 @@
 
   <target name="check-sorted">
     <check-translation dir="sorted" includes="*.properties" />
+  </target>
+
+  <target name="create-plugin">
+    <create-plugin />
   </target>
 
   <target name="clean">
