@@ -55,54 +55,54 @@ public class FormatTranslationTest {
 
 	@Test
 	public void testMatchEolStyle() {
-		assertTrue(TranslationUtils.matchEolStyle("", unix));
-		assertTrue(TranslationUtils.matchEolStyle("\n", unix));
-		assertTrue(TranslationUtils.matchEolStyle("\n\n", unix));
-		assertFalse(TranslationUtils.matchEolStyle("\r", unix));
-		assertFalse(TranslationUtils.matchEolStyle("\r\n", unix));
+		assertTrue(TaskUtils.matchEolStyle("", unix));
+		assertTrue(TaskUtils.matchEolStyle("\n", unix));
+		assertTrue(TaskUtils.matchEolStyle("\n\n", unix));
+		assertFalse(TaskUtils.matchEolStyle("\r", unix));
+		assertFalse(TaskUtils.matchEolStyle("\r\n", unix));
 		//
-		assertTrue(TranslationUtils.matchEolStyle("", win));
-		assertTrue(TranslationUtils.matchEolStyle("\r\n", win));
-		assertTrue(TranslationUtils.matchEolStyle("\r\n\r\n", win));
-		assertFalse(TranslationUtils.matchEolStyle("\r", win));
-		assertFalse(TranslationUtils.matchEolStyle("\n\r", win));
-		assertFalse(TranslationUtils.matchEolStyle("\n", win));
+		assertTrue(TaskUtils.matchEolStyle("", win));
+		assertTrue(TaskUtils.matchEolStyle("\r\n", win));
+		assertTrue(TaskUtils.matchEolStyle("\r\n\r\n", win));
+		assertFalse(TaskUtils.matchEolStyle("\r", win));
+		assertFalse(TaskUtils.matchEolStyle("\n\r", win));
+		assertFalse(TaskUtils.matchEolStyle("\n", win));
 	}
 
 	@Test
 	public void testCheckEolStyleAndReadLines() throws Exception {
 		final String input = "one\r\ntwo\n\rthree\\\nthree.one\n\nfour";
 		ArrayList<String> resultList = new ArrayList<String>();
-		assertFalse("not unique unix", TranslationUtils.checkEolStyleAndReadLines(input, resultList, unix));
+		assertFalse("not unique unix", TaskUtils.checkEolStyleAndReadLines(input, resultList, unix));
 		assertEquals("a trailing backslash escapes a new line", 4, resultList.size());
-		assertFalse("not unique mac", TranslationUtils.checkEolStyleAndReadLines(input, resultList, mac));
+		assertFalse("not unique mac", TaskUtils.checkEolStyleAndReadLines(input, resultList, mac));
 		assertEquals(4, resultList.size());
-		assertFalse("not unique win", TranslationUtils.checkEolStyleAndReadLines(input, resultList, win));
+		assertFalse("not unique win", TaskUtils.checkEolStyleAndReadLines(input, resultList, win));
 		assertEquals(4, resultList.size());
 		//
 		String unixInput = input.replaceAll("\r\n|\n|\r", unix);
 		System.out.println("unixInput='" + f(unixInput) + "'");
-		assertTrue("unique unix", TranslationUtils.checkEolStyleAndReadLines(unixInput, resultList, unix));
-		assertFalse("not mac", TranslationUtils.checkEolStyleAndReadLines(unixInput, resultList, mac));
-		assertFalse("not win", TranslationUtils.checkEolStyleAndReadLines(unixInput, resultList, win));
+		assertTrue("unique unix", TaskUtils.checkEolStyleAndReadLines(unixInput, resultList, unix));
+		assertFalse("not mac", TaskUtils.checkEolStyleAndReadLines(unixInput, resultList, mac));
+		assertFalse("not win", TaskUtils.checkEolStyleAndReadLines(unixInput, resultList, win));
 		assertEquals("a trailing backslash escapes a new line", 4, resultList.size());
 		//
 		String macInput = input.replaceAll("\r\n|\n|\r", mac);
 		System.out.println("macInput='" + f(macInput) + "'");
-		assertTrue("unique mac", TranslationUtils.checkEolStyleAndReadLines(macInput, resultList, mac));
-		assertFalse("not unix", TranslationUtils.checkEolStyleAndReadLines(macInput, resultList, unix));
-		assertFalse("not win", TranslationUtils.checkEolStyleAndReadLines(macInput, resultList, win));
+		assertTrue("unique mac", TaskUtils.checkEolStyleAndReadLines(macInput, resultList, mac));
+		assertFalse("not unix", TaskUtils.checkEolStyleAndReadLines(macInput, resultList, unix));
+		assertFalse("not win", TaskUtils.checkEolStyleAndReadLines(macInput, resultList, win));
 		assertEquals("a trailing backslash escapes a new line", 4, resultList.size());
 		//
 		String winInput = input.replaceAll("\r\n|\n|\r", win);
 		System.out.println("winInput='" + f(winInput) + "'");
-		assertTrue("unique win", TranslationUtils.checkEolStyleAndReadLines(winInput, resultList, win));
-		assertFalse("not unix", TranslationUtils.checkEolStyleAndReadLines(winInput, resultList, unix));
-		assertFalse("not mac", TranslationUtils.checkEolStyleAndReadLines(winInput, resultList, mac));
+		assertTrue("unique win", TaskUtils.checkEolStyleAndReadLines(winInput, resultList, win));
+		assertFalse("not unix", TaskUtils.checkEolStyleAndReadLines(winInput, resultList, unix));
+		assertFalse("not mac", TaskUtils.checkEolStyleAndReadLines(winInput, resultList, mac));
 		assertEquals("a trailing backslash escapes a new line", 4, resultList.size());
 		//
-		String resource = TranslationUtils.readFile(new File(TRANSLATIONS_SOURCE_DIR, "Resources_de.properties"));
-		assertTrue("not unix", TranslationUtils.checkEolStyleAndReadLines(resource, resultList, unix));
+		String resource = TaskUtils.readFile(new File(TRANSLATIONS_SOURCE_DIR, "Resources_de.properties"));
+		assertTrue("not unix", TaskUtils.checkEolStyleAndReadLines(resource, resultList, unix));
 	}
 
 	private String f(String input) {
@@ -112,7 +112,7 @@ public class FormatTranslationTest {
 	@Test
 	public void testFormatTranslation() {
 		final FormatTranslation formatTranslation = new FormatTranslation();
-		final Project project = TranslationUtils.createProject(formatTranslation);
+		final Project project = TaskUtils.createProject(formatTranslation);
 		formatTranslation.setTaskName("format-translation");
 		formatTranslation.setProject(project);
 		formatTranslation.setEolStyle("unix");

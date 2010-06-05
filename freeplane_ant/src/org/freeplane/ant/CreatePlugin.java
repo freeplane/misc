@@ -20,15 +20,10 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
-import java.util.Vector;
 
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.Task;
-import org.apache.tools.ant.input.InputHandler;
-import org.apache.tools.ant.input.InputRequest;
-import org.apache.tools.ant.input.MultipleChoiceInputRequest;
-import org.apache.tools.ant.util.StringUtils;
 
 /** creates a skeleton of a new Freeplane plugin. */
 public class CreatePlugin extends Task {
@@ -63,7 +58,7 @@ public class CreatePlugin extends Task {
 		if (!pluginTemplateDir.isDirectory())
 			fatal("cannot find Freeplane source directory: " + pluginTemplateDir + " does not exist");
 		if (pluginName == null) {
-			pluginName = ask("=> Please enter required plugin name:", null);
+			pluginName = TaskUtils.ask(getProject(), "=> Please enter required plugin name:", null);
 			assertNotNull(pluginName, "property 'pluginName' is required");
 		}
 		pluginName = pluginName.replaceAll(FREEPLANE_PLUGIN_PREFIX, "").toLowerCase();
@@ -71,10 +66,10 @@ public class CreatePlugin extends Task {
 			fatal("plugin name may only contain letters from the range [a-z]");
 		if (hasAction == null)
 			hasAction = String.valueOf(
-			    multipleChoice("=> Optional: Does this plugin contribute to the GUI?", "yes,no", "yes"))
+			    TaskUtils.multipleChoice(getProject(), "=> Optional: Does this plugin contribute to the GUI?", "yes,no", "yes"))
 			    .equalsIgnoreCase("yes");
 		if (extensionName == null)
-			extensionName = ask("=> Optional: name of a new extension to define (xml element like 'icon')?", null);
+			extensionName = TaskUtils.ask(getProject(), "=> Optional: name of a new extension to define (xml element like 'icon')?", null);
 	}
 
 	private void createDirs() {
@@ -103,7 +98,7 @@ public class CreatePlugin extends Task {
 	}
 
 	private void createAction() throws IOException {
-		final String capPluginName = firstToUpper(pluginName);
+		final String capPluginName = TaskUtils.firstToUpper(pluginName);
 		String source = "" //
 		        + "package " + packageName() + ";\n" //
 		        + "\n" //
@@ -131,7 +126,7 @@ public class CreatePlugin extends Task {
 	}
 
 	private void createExtension() throws IOException {
-		final String capPluginName = firstToUpper(extensionName);
+		final String capPluginName = TaskUtils.firstToUpper(extensionName);
 		String source = "" //
 		        + "package " + packageName() + ";\n" //
 		        + "\n" //
@@ -145,7 +140,7 @@ public class CreatePlugin extends Task {
 	private void createActivator() throws IOException {
 		final String registerAction = hasAction ? "				    "
 		        + "final MenuBuilder menuBuilder = modeController.getUserInputListenerFactory().getMenuBuilder();\n"
-		        + "				    menuBuilder.addAnnotatedAction(new " + firstToUpper(pluginName)
+		        + "				    menuBuilder.addAnnotatedAction(new " + TaskUtils.firstToUpper(pluginName)
 		        + "Action(modeController.getController()));\n" : "";
 		String source = "" //
 		        + "package " + packageName() + ";\n" //
@@ -197,7 +192,7 @@ public class CreatePlugin extends Task {
 		        , "META-INF/MANIFEST.MF" //
 		};
 		for (String fileName : files) {
-			final String content = TranslationUtils.readFile(new File(pluginTemplateDir, fileName));
+			final String content = TaskUtils.readFile(new File(pluginTemplateDir, fileName));
 			final File newFile = new File(newPluginDir, fileName);
 			write(newFile, transform(content));
 		}
@@ -212,7 +207,7 @@ public class CreatePlugin extends Task {
 		    .replaceAll("lib/jlatexmath-0.8.5.jar,\\s*(lib/plugin.jar)", "$1") // MANIFEST.MF special
 		    .replace("${commons-lang.jar}:${forms.jar}:${SimplyHTML.jar}:${jlatexmath.jar}", "") // build.xml special
 		    .replaceAll("latex", pluginName) //
-		    .replaceAll("Latex", firstToUpper(pluginName)) //
+		    .replaceAll("Latex", TaskUtils.firstToUpper(pluginName)) //
 		    .replaceAll("LATEX", pluginName.toUpperCase()) //
 		;
 	}
@@ -254,35 +249,6 @@ public class CreatePlugin extends Task {
 
 	private File getPluginTemplateDir() {
 		return new File(baseDir, "freeplane_plugin_latex");
-	}
-
-	private String ask(String message, String defaultValue) {
-		return multipleChoice(message, defaultValue, null);
-	}
-
-	@SuppressWarnings("unchecked")
-	private String multipleChoice(String message, String validValues, String defaultValue) {
-		InputRequest request = null;
-		if (validValues != null) {
-			Vector<String> accept = StringUtils.split(validValues, ',');
-			request = new MultipleChoiceInputRequest(message, accept);
-		}
-		else {
-			request = new InputRequest(message);
-		}
-		InputHandler handler = getProject().getInputHandler();
-		handler.handleInput(request);
-		final String value = request.getInput();
-		if ((value == null || value.trim().length() == 0) && defaultValue != null) {
-			return defaultValue;
-		}
-		return value;
-	}
-
-	private String firstToUpper(String string) {
-		if (string == null || string.length() < 2)
-			return string;
-		return string.substring(0, 1).toUpperCase() + string.substring(1);
 	}
 
 	private void mkdir(File dir) {

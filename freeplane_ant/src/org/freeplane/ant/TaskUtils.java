@@ -1,5 +1,5 @@
 /**
- * TranslationUtils.java
+ * TaskUtils.java
  *
  * Copyright (C) 2010,  Volker Boerchers
  *
@@ -24,14 +24,19 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
+import java.util.Vector;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.tools.ant.DefaultLogger;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.Task;
+import org.apache.tools.ant.input.InputHandler;
+import org.apache.tools.ant.input.InputRequest;
+import org.apache.tools.ant.input.MultipleChoiceInputRequest;
+import org.apache.tools.ant.util.StringUtils;
 
-public class TranslationUtils {
+public class TaskUtils {
 	static class IncludeFileFilter implements FileFilter {
 		private ArrayList<Pattern> includePatterns = new ArrayList<Pattern>();
 		private ArrayList<Pattern> excludePatterns = new ArrayList<Pattern>();
@@ -193,4 +198,33 @@ public class TranslationUtils {
 		task.setProject(project);
 		return project;
 	}
+
+	static String firstToUpper(String string) {
+    	if (string == null || string.length() < 2)
+    		return string;
+    	return string.substring(0, 1).toUpperCase() + string.substring(1);
+    }
+
+	@SuppressWarnings("unchecked")
+    static String multipleChoice(Project project, String message, String validValues, String defaultValue) {
+    	InputRequest request = null;
+    	if (validValues != null) {
+    		Vector<String> accept = StringUtils.split(validValues, ',');
+    		request = new MultipleChoiceInputRequest(message, accept);
+    	}
+    	else {
+    		request = new InputRequest(message);
+    	}
+    	InputHandler handler = project.getInputHandler();
+    	handler.handleInput(request);
+    	final String value = request.getInput();
+    	if ((value == null || value.trim().length() == 0) && defaultValue != null) {
+    		return defaultValue;
+    	}
+    	return value;
+    }
+
+	static String ask(Project project, String message, String defaultValue) {
+    	return multipleChoice(project, message, defaultValue, null);
+    }
 }
