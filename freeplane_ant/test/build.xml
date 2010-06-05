@@ -50,6 +50,10 @@
     <create-plugin />
   </target>
 
+  <target name="create-plugin-batch">
+    <create-plugin baseDir="." pluginname="helloworld" hasAction="true" extensionName="world" />
+  </target>
+
   <target name="clean">
     <delete dir="sorted" quiet="true" />
     <delete dir="${bin}" quiet="true" />

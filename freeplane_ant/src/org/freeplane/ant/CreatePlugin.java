@@ -35,9 +35,9 @@ public class CreatePlugin extends Task {
 	private static final String FREEPLANE_PLUGIN_PREFIX = "freeplane_plugin_";
 	private String pluginName;
 	private Boolean hasAction;
+	private String extensionName;
 	private File newPluginDir;
 	private File pluginTemplateDir;
-	private String extensionName;
 	private File baseDir;
 
 	public void execute() {
@@ -53,7 +53,7 @@ public class CreatePlugin extends Task {
 			createOtherFiles();
 		}
 		catch (IOException e) {
-			throw new BuildException("error creating files", e);
+			throw new BuildException("error creating files: " + e.getMessage(), e);
 		}
 		finalWords();
 	}
@@ -192,7 +192,6 @@ public class CreatePlugin extends Task {
 		        , ".settings/org.eclipse.core.runtime.prefs" //
 		        , ".settings/org.eclipse.jdt.core.prefs" //
 		        , ".settings/org.eclipse.pde.core.prefs" //
-		        , "build.properties" //
 		        , "ant/ant.properties" //
 		        , "ant/build.xml" //
 		        , "META-INF/MANIFEST.MF" //
@@ -202,6 +201,8 @@ public class CreatePlugin extends Task {
 			final File newFile = new File(newPluginDir, fileName);
 			write(newFile, transform(content));
 		}
+		// build.properties were missing in 1_0_x so don't try to copy them
+		write(new File(newPluginDir, "build.properties"), "source.lib/plugin.jar = src/\n");
 	}
 
 	private String transform(String content) {
@@ -327,4 +328,12 @@ public class CreatePlugin extends Task {
 	public void setHasAction(Boolean hasAction) {
 		this.hasAction = hasAction;
 	}
+
+	public String getExtensionName() {
+    	return extensionName;
+    }
+
+	public void setExtensionName(String extensionName) {
+    	this.extensionName = extensionName;
+    }
 }
