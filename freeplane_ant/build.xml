@@ -6,12 +6,11 @@
   <property name="java_source_version" value="1.5" />
   <property name="java_target_version" value="1.5" />
   <property name="jar" value="${bin}/freeplaneant.jar" />
-  <property name="google.translator.jar" value="${lib}/google-api-translate-java-0.92.jar" />
 
   <target name="compile">
     <mkdir dir="${bin}" />
-    <javac srcdir="${src}" destdir="${bin}" debug="${debug}" source="${java_source_version}" target="${java_target_version}"
-	   classpath="${google.translator.jar}" />
+    <javac srcdir="${src}" destdir="${bin}" debug="${debug}" 
+    	source="${java_source_version}" target="${java_target_version}" />
   </target>
 
   <target name="jar" depends="compile">
