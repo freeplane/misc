@@ -30,7 +30,6 @@ public class CreatePlugin extends Task {
 	private static final String FREEPLANE_PLUGIN_PREFIX = "freeplane_plugin_";
 	private String pluginName;
 	private Boolean hasAction;
-	private String extensionName;
 	private File newPluginDir;
 	private File pluginTemplateDir;
 	private File baseDir;
@@ -68,8 +67,6 @@ public class CreatePlugin extends Task {
 			hasAction = String.valueOf(
 			    TaskUtils.multipleChoice(getProject(), "=> Optional: Does this plugin contribute to the GUI?", "yes,no", "yes"))
 			    .equalsIgnoreCase("yes");
-		if (extensionName == null)
-			extensionName = TaskUtils.ask(getProject(), "=> Optional: name of a new extension to define (xml element like 'icon')?", null);
 	}
 
 	private void createDirs() {
@@ -90,8 +87,6 @@ public class CreatePlugin extends Task {
 	}
 
 	private void createSources() throws IOException {
-		if (extensionName != null)
-			createExtension();
 		if (hasAction)
 			createAction();
 		createActivator();
@@ -123,18 +118,6 @@ public class CreatePlugin extends Task {
 		        + "	}\n" //
 		        + "}\n";
 		write(new File(sourceDir(), capPluginName + "Action.java"), source);
-	}
-
-	private void createExtension() throws IOException {
-		final String capPluginName = TaskUtils.firstToUpper(extensionName);
-		String source = "" //
-		        + "package " + packageName() + ";\n" //
-		        + "\n" //
-		        + "import org.freeplane.core.extension.IExtension;\n" //
-		        + "\n" //
-		        + "/*package*/ class " + capPluginName + "Extension implements IExtension {\n" //
-		        + "}\n";
-		write(new File(sourceDir(), capPluginName + "Extension.java"), source);
 	}
 
 	private void createActivator() throws IOException {
@@ -294,12 +277,4 @@ public class CreatePlugin extends Task {
 	public void setHasAction(Boolean hasAction) {
 		this.hasAction = hasAction;
 	}
-
-	public String getExtensionName() {
-    	return extensionName;
-    }
-
-	public void setExtensionName(String extensionName) {
-    	this.extensionName = extensionName;
-    }
 }
