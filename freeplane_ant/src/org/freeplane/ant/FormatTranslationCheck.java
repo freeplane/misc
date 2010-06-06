@@ -63,7 +63,7 @@ public class FormatTranslationCheck extends Task {
 
 	public static void main(String[] args) {
 		final FormatTranslationCheck formatTranslationCheck = new FormatTranslationCheck();
-		final Project project = TranslationUtils.createProject(formatTranslationCheck);
+		final Project project = TaskUtils.createProject(formatTranslationCheck);
 		formatTranslationCheck.setTaskName("check-translation");
 		formatTranslationCheck.formatTranslation.setProject(project);
 		formatTranslationCheck.formatTranslation.setTaskName("check-translation");

@@ -123,15 +123,15 @@ public class FormatTranslation extends Task {
 	private int executeImpl(boolean checkOnly) {
 		validate();
 		File[] inputFiles = inputDir
-		    .listFiles(new TranslationUtils.IncludeFileFilter(includePatterns, excludePatterns));
+		    .listFiles(new TaskUtils.IncludeFileFilter(includePatterns, excludePatterns));
 		try {
 			int countFormattingRequired = 0;
 			for (int i = 0; i < inputFiles.length; i++) {
 				File inputFile = inputFiles[i];
 				log("processing " + inputFile + "...", Project.MSG_DEBUG);
-				final String input = TranslationUtils.readFile(inputFile);
+				final String input = TaskUtils.readFile(inputFile);
 				final ArrayList<String> lines = new ArrayList<String>(2048);
-				boolean eolStyleMatches = TranslationUtils.checkEolStyleAndReadLines(input, lines, lineSeparator);
+				boolean eolStyleMatches = TaskUtils.checkEolStyleAndReadLines(input, lines, lineSeparator);
 				final ArrayList<String> sortedLines = processLines(inputFile, lines);
 				final boolean contentChanged = !lines.equals(sortedLines);
 				final boolean formattingRequired = !eolStyleMatches || contentChanged;
@@ -145,7 +145,7 @@ public class FormatTranslation extends Task {
 				}
 				if (!checkOnly && (formattingRequired || writeIfUnchanged)) {
 					File outputFile = new File(outputDir, inputFile.getName());
-					TranslationUtils.writeFile(outputFile, sortedLines, lineSeparator);
+					TaskUtils.writeFile(outputFile, sortedLines, lineSeparator);
 				}
 			}
 			return countFormattingRequired;
@@ -193,40 +193,40 @@ public class FormatTranslation extends Task {
 			final String thisValue = keyValue[1];
 			if (lastKey != null && thisKey.equals(lastKey)) {
 				if (quality(thisValue) < quality(lastValue)) {
-					log(inputFile.getName() + ": drop " + TranslationUtils.toLine(lastKey, thisValue));
+					log(inputFile.getName() + ": drop " + TaskUtils.toLine(lastKey, thisValue));
 					continue;
 				}
 				else if (quality(thisValue) == quality(lastValue)) {
 					if (thisValue.equals(lastValue)) {
-						log(inputFile.getName() + ": drop duplicate " + TranslationUtils.toLine(lastKey, thisValue));
+						log(inputFile.getName() + ": drop duplicate " + TaskUtils.toLine(lastKey, thisValue));
 					}
 					else if (quality(thisValue) == QUALITY_MANUALLY_TRANSLATED) {
 						warn(inputFile.getName() //
 						        + ": drop one of two of equal quality (revisit!):keep: "
-						        + TranslationUtils.toLine(lastKey, lastValue));
+						        + TaskUtils.toLine(lastKey, lastValue));
 						warn(inputFile.getName() //
 						        + ": drop one of two of equal quality (revisit!):drop: "
-						        + TranslationUtils.toLine(thisKey, thisValue));
+						        + TaskUtils.toLine(thisKey, thisValue));
 					}
 					else {
-						log(inputFile.getName() + ": drop " + TranslationUtils.toLine(lastKey, thisValue));
+						log(inputFile.getName() + ": drop " + TaskUtils.toLine(lastKey, thisValue));
 					}
 					continue;
 				}
 				else {
-					log(inputFile.getName() + ": drop " + TranslationUtils.toLine(lastKey, lastValue));
+					log(inputFile.getName() + ": drop " + TaskUtils.toLine(lastKey, lastValue));
 				}
 				lastValue = thisValue;
 			}
 			else {
 				if (lastKey != null)
-					result.add(TranslationUtils.toLine(lastKey, lastValue));
+					result.add(TaskUtils.toLine(lastKey, lastValue));
 				lastKey = thisKey;
 				lastValue = thisValue;
 			}
 		}
 		if (lastKey != null)
-			result.add(TranslationUtils.toLine(lastKey, lastValue));
+			result.add(TaskUtils.toLine(lastKey, lastValue));
 		return result;
 	}
 
@@ -260,11 +260,11 @@ public class FormatTranslation extends Task {
 	}
 
 	public void setIncludes(String pattern) {
-		includePatterns.add(Pattern.compile(TranslationUtils.wildcardToRegex(pattern)));
+		includePatterns.add(Pattern.compile(TaskUtils.wildcardToRegex(pattern)));
 	}
 
 	public void setExcludes(String pattern) {
-		excludePatterns.add(Pattern.compile(TranslationUtils.wildcardToRegex(pattern)));
+		excludePatterns.add(Pattern.compile(TaskUtils.wildcardToRegex(pattern)));
 	}
 
 	/** parameter is set in the build file via the attribute "outputDir" */
