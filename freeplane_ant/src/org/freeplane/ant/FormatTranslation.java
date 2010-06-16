@@ -124,7 +124,20 @@ public class FormatTranslation extends Task {
 		validate();
 		File[] inputFiles = inputDir
 		    .listFiles(new TaskUtils.IncludeFileFilter(includePatterns, excludePatterns));
-		try {
+		return process(inputFiles, checkOnly);
+	}
+	
+	static public void main(final String argc[]){
+		File[] inputFiles = new File[argc.length];
+		int i = 0;
+		for(String arg:argc){
+			inputFiles[i++]=new File(arg);
+		}
+		new FormatTranslation().process(inputFiles, false);
+	}
+
+	private int process(File[] inputFiles, boolean checkOnly) {
+	    try {
 			int countFormattingRequired = 0;
 			for (int i = 0; i < inputFiles.length; i++) {
 				File inputFile = inputFiles[i];
@@ -153,7 +166,7 @@ public class FormatTranslation extends Task {
 		catch (IOException e) {
 			throw new BuildException(e);
 		}
-	}
+    }
 
 	private String formatCause(boolean contentChanged, boolean eolStyleMatches) {
 		final String string1 = eolStyleMatches ? "" : "wrong eol style";
