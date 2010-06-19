@@ -132,7 +132,7 @@ public class FormatTranslation extends Task {
 				final String input = TaskUtils.readFile(inputFile);
 				final ArrayList<String> lines = new ArrayList<String>(2048);
 				boolean eolStyleMatches = TaskUtils.checkEolStyleAndReadLines(input, lines, lineSeparator);
-				final ArrayList<String> sortedLines = processLines(inputFile, lines);
+				final ArrayList<String> sortedLines = processLines(inputFile, new ArrayList<String>(lines));
 				final boolean contentChanged = !lines.equals(sortedLines);
 				final boolean formattingRequired = !eolStyleMatches || contentChanged;
 				if (formattingRequired) {
