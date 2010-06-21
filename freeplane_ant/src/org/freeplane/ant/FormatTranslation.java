@@ -122,8 +122,20 @@ public class FormatTranslation extends Task {
 	/** returns the number of unformatted files. */
 	private int executeImpl(boolean checkOnly) {
 		validate();
-		File[] inputFiles = inputDir
-		    .listFiles(new TaskUtils.IncludeFileFilter(includePatterns, excludePatterns));
+		File[] inputFiles = inputDir.listFiles(new TaskUtils.IncludeFileFilter(includePatterns, excludePatterns));
+		return process(inputFiles, checkOnly);
+	}
+
+	static public void main(final String argc[]) {
+		File[] inputFiles = new File[argc.length];
+		int i = 0;
+		for (String arg : argc) {
+			inputFiles[i++] = new File(arg);
+		}
+		new FormatTranslation().process(inputFiles, false);
+	}
+
+	private int process(File[] inputFiles, boolean checkOnly) {
 		try {
 			int countFormattingRequired = 0;
 			for (int i = 0; i < inputFiles.length; i++) {
