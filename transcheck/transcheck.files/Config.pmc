@@ -1,0 +1,39 @@
+package Config;
+
+# All kind of variables used by Transcheck, just adapt them.
+# Variables starting with an underscore are just help variables are not used
+# outside of this file.
+
+# The name of your (Sourceforge) project
+my $_PROJECT = "freeplane";
+
+# Constants to be adapted based on your code management system
+$EXPORT_COMMAND = "/usr/bin/bzr";
+$EXPORT_PARAM = "export";
+my $_EXPORT_BRANCH = "${_PROJECT}/${_PROJECT}_program/release_branches/1_0_x";
+$EXPORT_ROOT = "bzr://${_PROJECT}.bzr.sourceforge.net/bzrroot/"
+					. $_EXPORT_BRANCH;
+my $_EXPORT_TRANS_DIR = "${_PROJECT}/resources/translations";
+my $_EXPORT_REF_DIR = "${_PROJECT}/viewer-resources/translations";
+
+$HTML_LINK = "http://${_PROJECT}.bzr.sourceforge.net/bzr/"
+					. $_EXPORT_BRANCH . "/files";
+
+# Constants to adapt based on your web server configuration
+#$TARGET_DIR = "/home/groups/f/fr/${_PROJECT}/persistent/transcheck";
+$TARGET_DIR = "/tmp/transcheck";
+my $_TARGET_TRANS_DIR = "translations";
+my $_TARGET_REF_DIR = "reference";
+my $_TARGET_HTML_DIR = "html";
+my $_TARGET_TEXT_DIR = "text";
+
+# Let's build a few derived constants...
+$EXPORT_TRANS_PATH = $EXPORT_ROOT . "/" . $_EXPORT_TRANS_DIR;
+$EXPORT_REF_PATH = $EXPORT_ROOT . "/" . $_EXPORT_REF_DIR;
+$TARGET_TRANS_PATH = $TARGET_DIR . "/" . $_TARGET_TRANS_DIR;
+$TARGET_REF_PATH = $TARGET_DIR . "/" . $_TARGET_REF_DIR;
+$TARGET_HTML_PATH = $TARGET_DIR . "/" . $_TARGET_HTML_DIR;
+$TARGET_TEXT_PATH = $TARGET_DIR . "/" . $_TARGET_TEXT_DIR;
+
+$REFERENCE_FILE = 'Resources_en.properties';
+$REFERENCE_PATH = $TARGET_REF_PATH . '/' . $REFERENCE_FILE;

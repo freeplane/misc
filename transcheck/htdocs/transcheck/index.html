@@ -1,0 +1,24 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+ <head>
+   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+   <title>Translation file check for Freeplane</title>
+   <link rel="stylesheet" href="/transcheck/transcheck.css" type="text/css" />
+ </head>
+ <body>
+   <h1>Freeplane Translation Check</h1>
+   <p>Upload a translation file to compare it with the
+<a href="/cgi-bin/translist.cgi#Reference">reference property file</a>,
+before submitting it to
+<a href="http://sourceforge.net/apps/mantisbt/freeplane/search.php?project_id=12&hide_status_id=90">Mantis</a>:</p>
+   <form action="/cgi-bin/transcheck.cgi" method="post" enctype="multipart/form-data">
+     <p>Resource file to check: <input type="file" name="translation" /></p>
+     <p><input type="submit" name="Submit" value="Check File" /></p>
+   </form>
+<p>As a basis for your work, you can use one of those
+<a href="/cgi-bin/translist.cgi#Translations">translation files</a>, extracted
+at regular intervals from our code repository. You can also check if your
+favorite language is well translatated.</p>
+<p>Thanks!</p>
+ </body>
+</html>
