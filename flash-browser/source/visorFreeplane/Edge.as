@@ -25,7 +25,7 @@ import visorFreeplane.*;
 * They have their own movieclip
 */
 class visorFreeplane.Edge {
-	public static var num:Number=1000; // counter of edges
+	public static var num:Number;// counter of edges
 	public static var elipseMode:Boolean=true;
 	private var nombre:String; // Not used
 	private var ref_mc:MovieClip;
@@ -37,7 +37,7 @@ class visorFreeplane.Edge {
 		nombre=nom;
 		_orig=orig;
 		_dest=dest;
-		num++;
+		num= mc.getNextHighestDepth();
 		ref_mc=mc.createEmptyMovieClip("link"+num,num);
 		// add to nodes origin and dest
 		_orig.addEdge(this);

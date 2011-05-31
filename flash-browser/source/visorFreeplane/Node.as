@@ -28,7 +28,7 @@ import flash.net;
 */
 
 class visorFreeplane.Node {
-	public static var num:Number=2000; // counter of nodes
+	public var num:Number; // counter of nodes
 	public static var colorSel:Number=0xBBBBBB; // select color
 	public static var colorNoSel:Number=0xFFDD44; // unselect color
 	public static var defaultWordWrap:Number=600;
@@ -125,7 +125,7 @@ class visorFreeplane.Node {
 		atributes=findAtributes(node_xml);
 		coment=coment;
 		listElements=[];
-		num+=4;
+		num=mc.getNextHighestDepth();
 		//creation of asociated movieClip
 		id=node_xml.attributes.ID?node_xml.attributes.ID:"node_"+num;
 		ref_mc=mc.createEmptyMovieClip(id,num);

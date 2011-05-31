@@ -325,8 +325,6 @@ class visorFreeplane.Browser {
 		list_left_clouds=[];
 
 		Node.currentOver=null;
-		Node.num=2000;
-		Edge.num=1000;
 		searchDialog.reset();
 	}
 
