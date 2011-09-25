@@ -17,19 +17,24 @@ foreach($toBeIgnored as $l)
 }
 
 $lines = split("\n", $log);
-$ver = $_POST["version"];
-$hashInput = $ver;
+$hashInput = "";
 foreach ($lines as $l) {
-    if(strpos($l, "org.freeplane.")){
+    if(strpos($l, "\tat org.freeplane.") === 0 || strpos($l, "missing key ") === 0 ){
     	$hashInput = $hashInput . $l;
     }
 }
+$ver = $_POST["version"];
+$rev = $_POST["revision"];
+$hashInput = $hashInput . $ver . $rev;
 
 $actualHash = md5($hashInput);
 $givenHash =  $_POST["hash"];
 if($actualHash != $givenHash)
 {
 	echo "wrong hash";
+# echo $hashInput;
+# echo $actualHash;
+# echo $givenHash;	
 	return;
 }
 
@@ -60,12 +65,16 @@ if(! $fh)
 
 chmod($file, 0666);
 fwrite($fh, date("F j, Y, G:i"));
-fwrite($fh, "\n");
 if($newFile)
 {
-	fwrite($fh, $log);
 	fwrite($fh, "\n");
+	fwrite($fh, $log);
 }
+else
+{
+	fwrite($fh, " -- " . $rev);
+}
+fwrite($fh, "\n");
 fclose($fh);
 
 foreach($wanted as $l)
