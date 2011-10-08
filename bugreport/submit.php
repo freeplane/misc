@@ -46,12 +46,22 @@ if(! file_exists($pathToVersion))
 #	mkdir($pathToVersion);
 #    chmod($pathToVersion, 0777);
 }
-$dir = $pathToVersion . "/" . substr($actualHash, 0, 1);
+$dir = $pathToVersion;
+
+$dir = $dir . "/" . $rev;
 if(! file_exists($dir))
 {
 	mkdir($dir);
     chmod($dir, 0777);
 }
+
+$dir = $dir . "/" . substr($actualHash, 0, 1);
+if(! file_exists($dir))
+{
+	mkdir($dir);
+    chmod($dir, 0777);
+}
+
 $file = $dir . "/" . $actualHash . ".log";
 
 $newFile = !file_exists($file);
