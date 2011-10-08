@@ -48,11 +48,19 @@ if(! file_exists($pathToVersion))
 }
 $dir = $pathToVersion;
 
-$dir = $dir . "/" . $rev;
+if($rev != "")
+{
+	$dir = $dir . "/" . $rev;
+}
+else
+{
+	$dir = $dir . "/" . "unknown-revision";
+}
+
 if(! file_exists($dir))
 {
 	mkdir($dir);
-    chmod($dir, 0777);
+	chmod($dir, 0777);
 }
 
 $dir = $dir . "/" . substr($actualHash, 0, 1);
