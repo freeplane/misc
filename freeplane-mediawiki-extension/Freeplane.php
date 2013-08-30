@@ -1,6 +1,6 @@
 <?php
 // Freeplane mindmap WikiMedia extension
-// (C) Dimitry Polivaev 2006-2010
+// (C) Dimitry Polivaev 2006-2013
 // Example:
 $wgExtensionFunctions[] = "wfFreeplaneExtension";
 
@@ -32,6 +32,7 @@ function renderMindmap($input)
 	}
 
     $mm_title = "";
+    $mm_notitle = 0;
     $mm_description = "";
 
     $paramVector = explode("|", $input);
@@ -76,15 +77,16 @@ function renderMindmap($input)
     elseif ($mm_title === "") {
         $mm_title = $url;
     }
-    $imageTitle = Title::makeTitleSafe("Image", $url);
+    $imageTitle = Title::makeTitleSafe(NS_FILE, $url);
     if($imageTitle == NULL){
     	return MindmapNotFoundError($url);
 	}
-    $img = Image::newFromTitle($imageTitle);
+	$repo = RepoGroup::singleton()->getLocalRepo();
+    $img = LocalFile::newFromTitle($imageTitle, $repo);
     if($img->exists() != true){
     	return MindmapNotFoundError($url);
 	}
-    $url = $img->getViewURL(false);
+    $url = $img->getURL(false);
 
     global $wgServer, $wgScriptPath, $wgTitle, $wgUrlProtocols, $wgUser;
     static $flashContentCounter = 0;
@@ -127,7 +129,7 @@ function renderMindmap($input)
             $ref .= "$key=$value&";
         }
         $ref = substr($ref, 0, -1);
-        $output .= "<a href=$ref>$mm_description</a>";
+        $output = "<a href=$ref>$mm_description</a>";
     }
     // print($output);
     if ($mm_target == "embedded")
